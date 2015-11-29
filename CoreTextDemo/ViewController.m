@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "CTRichView.h"
 
 @interface ViewController ()
 
@@ -17,6 +18,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
+    
+    CTRichView *richView = [[CTRichView alloc]initWithFrame:self.view.bounds];
+    [self.view addSubview:richView];
 }
 
 - (void)didReceiveMemoryWarning {

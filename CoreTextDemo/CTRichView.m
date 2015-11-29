@@ -10,6 +10,92 @@
 
 @implementation CTRichView
 
+- (id)initWithFrame:(CGRect)frame{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor whiteColor];
+        [self setupEvents];
+    }
+    return self;
+}
+- (void)setupEvents{
+    UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(userTapGestureDetected:)];
+    
+    [self addGestureRecognizer:tapRecognizer];
+    
+    self.userInteractionEnabled = YES;
+}
+
+- (void)userTapGestureDetected:(UIGestureRecognizer *)recognizer{
+    CGPoint point = [recognizer locationInView:self];
+    //先判断是否是点击的图片Rect
+    for(CTImageData *imageData in _imageDataArray){
+        CGRect imageRect = imageData.imageRect;
+        CGFloat imageOriginY = self.bounds.size.height - imageRect.origin.y - imageRect.size.height;
+        CGRect rect = CGRectMake(imageRect.origin.x,imageOriginY, imageRect.size.width, imageRect.size.height);
+        if(CGRectContainsPoint(rect, point)){
+            NSLog(@"tap image handle");
+            return;
+        }
+    }
+    
+    //再判断链接
+    CFIndex idx = [self touchPointOffset:point];
+    if (idx != -1) {
+        for(CTLinkData *linkData in _linkDataArray){
+            if (NSLocationInRange(idx, linkData.range)) {
+                NSLog(@"tap link handle,url:%@",linkData.url);
+                break;
+            }
+        }
+    }
+}
+
+
+- (CFIndex)touchPointOffset:(CGPoint)point{
+    //获取所有行
+    CFArrayRef lines = CTFrameGetLines(_ctFrame);
+    
+    if(lines == nil){
+        return -1;
+    }
+    CFIndex count = CFArrayGetCount(lines);
+    
+    //获取每行起点
+    CGPoint origins[count];
+    CTFrameGetLineOrigins(_ctFrame, CFRangeMake(0, 0), origins);
+    
+    
+    //Flip
+    CGAffineTransform transform =  CGAffineTransformMakeTranslation(0, self.bounds.size.height);
+    transform = CGAffineTransformScale(transform, 1.f, -1.f);
+    
+    CFIndex idx = -1;
+    for (int i = 0; i<count; i++) {
+        CGPoint lineOrigin = origins[i];
+        CTLineRef line = CFArrayGetValueAtIndex(lines, i);
+        
+        //获取每一行Rect
+        CGFloat ascent = 0.0f;
+        CGFloat descent = 0.0f;
+        CGFloat leading = 0.0f;
+        CGFloat width = (CGFloat)CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+        CGRect lineRect = CGRectMake(lineOrigin.x, lineOrigin.y - descent, width, ascent + descent);
+        
+        lineRect = CGRectApplyAffineTransform(lineRect, transform);
+        
+        if(CGRectContainsPoint(lineRect,point)){
+            //将point相对于view的坐标转换为相对于该行的坐标
+            CGPoint linePoint = CGPointMake(point.x-lineRect.origin.x, point.y-lineRect.origin.y);
+            //根据当前行的坐标获取相对整个CoreText串的偏移
+            idx = CTLineGetStringIndexForPosition(line, linePoint);
+        }
+    }
+    return idx;
+}
+
+
+
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
     
@@ -27,7 +113,7 @@
     CGPathAddRect(path, NULL, self.bounds);
     
     //step 3:
-    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"移动互联网实战之CoreText-Holder italicFont"];
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"移动互联网实战之CoreText-Holder italicFont 颜值高，再丑的衣服都能穿出风韵来。中国中学校服是古往今来世界服装史上最丑也最反人性反人类的服饰之一，还不如文革时期的毛式衣服，仅次于从头裹到脚的burka。饶是这样的垃圾服装，也挡不住颜值逆袭"];
     //设置字体
     UIFont *font = [UIFont systemFontOfSize:20];
     CTFontRef fontRef = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
@@ -41,6 +127,7 @@
     
     
     //下划线,
+    NSRange linkRange = NSMakeRange(8, 5);
     NSMutableDictionary *attributeDic = [[NSMutableDictionary alloc]init];
     //下划线
     [attributeDic setObject:[NSNumber numberWithInt:kCTUnderlineStyleSingle] forKey:(id)kCTUnderlineStyleAttributeName];
@@ -50,7 +137,17 @@
     UIFont *boldFont = [UIFont boldSystemFontOfSize:22];
     [attributeDic setObject:boldFont forKey:(id)kCTFontAttributeName];
     
-    [attributedString addAttributes:attributeDic range:NSMakeRange(8, 15)];
+    [attributedString addAttributes:attributeDic range:linkRange];
+    
+    //
+    if(!_linkDataArray){
+        _linkDataArray = [[NSMutableArray alloc]init];
+    }
+    CTLinkData *ctLinkData = [[CTLinkData alloc]init];
+    ctLinkData.text = [attributedString.string substringWithRange:linkRange];
+    ctLinkData.url = @"http://www.baidu.com";
+    ctLinkData.range = linkRange;
+    [_linkDataArray addObject:ctLinkData];
     
     
     //斜体,
@@ -83,6 +180,9 @@
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attributedString);
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, [attributedString length]), path, NULL);
     
+    //底层由C实现的方法，其内存管理并不支持ARC，所以特别需要注意底层接口的内存管理。
+    [self setCtFrame:frame];
+    
     //step 5:
     CTFrameDraw(frame,context);
     
@@ -90,6 +190,9 @@
     CFArrayRef lines = CTFrameGetLines(frame);
     CGPoint lineOrigins[CFArrayGetCount(lines)];
     CTFrameGetLineOrigins(frame, CFRangeMake(0, 0), lineOrigins);//获取第行的起始点
+    
+    NSInteger idx = -1;
+    
     for (int i = 0; i<CFArrayGetCount(lines); i++) {
         CTLineRef line = CFArrayGetValueAtIndex(lines, i);
         CGFloat lineAscent;//上缘线
@@ -99,6 +202,7 @@
         
         //获取此行中每个CTRun
         CFArrayRef runs = CTLineGetGlyphRuns(line);
+        idx += CFArrayGetCount(runs);
         for(int j = 0;j<CFArrayGetCount(runs);j++){
             CGFloat runAscent;//此CTRun上缘线
             CGFloat runDescent;//此CTRun下缘线
@@ -124,6 +228,25 @@
                     imageRect.origin.x = runRect.origin.x + lineOrigin.x;
                     imageRect.origin.y = lineOrigin.y;
                     CGContextDrawImage(context, imageRect, image.CGImage);
+                    
+                    //本演示示例，实战请在渲染之前处理数据，做到最佳实践
+                    if(!_imageDataArray){
+                        _imageDataArray = [[NSMutableArray alloc]init];
+                    }
+                    BOOL imgExist = NO;
+                    for (CTImageData *ctImageData in _imageDataArray) {
+                        if (ctImageData.idx == idx) {
+                            imgExist = YES;
+                            break;
+                        }
+                    }
+                    if(!imgExist){
+                        CTImageData *ctImageData = [[CTImageData alloc]init];
+                        ctImageData.imgHolder = imgName;
+                        ctImageData.imageRect = imageRect;
+                        ctImageData.idx = idx;
+                        [_imageDataArray addObject:ctImageData];
+                    }
                 }
             }
         }
@@ -156,5 +279,25 @@ CGFloat ImgRunDelegateGetWidthCallback(void *refCon){
     NSString *imageName = (__bridge NSString *)refCon;
     return [UIImage imageNamed:imageName].size.width;
 }
+#pragma mark - Manage memory of CTFrame
+
+- (void)setCtFrame:(CTFrameRef)ctFrame{
+    if(_ctFrame != ctFrame){
+        if(_ctFrame != nil){
+            CFRelease(_ctFrame);
+        }
+        CFRetain(ctFrame);
+        _ctFrame = ctFrame;
+    }
+}
+
+- (void)dealloc{
+    if(_ctFrame != nil){
+        CFRelease(_ctFrame);
+        _ctFrame = nil;
+    }
+}
+
+
 
 @end

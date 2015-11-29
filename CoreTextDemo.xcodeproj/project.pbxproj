@@ -15,6 +15,8 @@
 		44FB0C821C084000005F4781 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 44FB0C801C084000005F4781 /* LaunchScreen.storyboard */; };
 		44FB0C8E1C084042005F4781 /* CTRichView.m in Sources */ = {isa = PBXBuildFile; fileRef = 44FB0C8D1C084042005F4781 /* CTRichView.m */; };
 		44FB0C901C085D27005F4781 /* test.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 44FB0C8F1C085D27005F4781 /* test.jpg */; };
+		C9A20CB91C0A24790018AC85 /* CTImageData.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A20CB81C0A24790018AC85 /* CTImageData.m */; };
+		C9A20CBC1C0A41060018AC85 /* CTLinkData.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A20CBB1C0A41060018AC85 /* CTLinkData.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +33,10 @@
 		44FB0C8C1C084042005F4781 /* CTRichView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTRichView.h; sourceTree = "<group>"; };
 		44FB0C8D1C084042005F4781 /* CTRichView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTRichView.m; sourceTree = "<group>"; };
 		44FB0C8F1C085D27005F4781 /* test.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test.jpg; sourceTree = "<group>"; };
+		C9A20CB71C0A24790018AC85 /* CTImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTImageData.h; sourceTree = "<group>"; };
+		C9A20CB81C0A24790018AC85 /* CTImageData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTImageData.m; sourceTree = "<group>"; };
+		C9A20CBA1C0A41060018AC85 /* CTLinkData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTLinkData.h; sourceTree = "<group>"; };
+		C9A20CBB1C0A41060018AC85 /* CTLinkData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTLinkData.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +75,10 @@
 				44FB0C791C084000005F4781 /* ViewController.m */,
 				44FB0C8C1C084042005F4781 /* CTRichView.h */,
 				44FB0C8D1C084042005F4781 /* CTRichView.m */,
+				C9A20CB71C0A24790018AC85 /* CTImageData.h */,
+				C9A20CB81C0A24790018AC85 /* CTImageData.m */,
+				C9A20CBA1C0A41060018AC85 /* CTLinkData.h */,
+				C9A20CBB1C0A41060018AC85 /* CTLinkData.m */,
 				44FB0C7B1C084000005F4781 /* Main.storyboard */,
 				44FB0C8F1C085D27005F4781 /* test.jpg */,
 				44FB0C7E1C084000005F4781 /* Assets.xcassets */,
@@ -160,8 +170,10 @@
 			files = (
 				44FB0C7A1C084000005F4781 /* ViewController.m in Sources */,
 				44FB0C771C084000005F4781 /* AppDelegate.m in Sources */,
+				C9A20CBC1C0A41060018AC85 /* CTLinkData.m in Sources */,
 				44FB0C741C084000005F4781 /* main.m in Sources */,
 				44FB0C8E1C084042005F4781 /* CTRichView.m in Sources */,
+				C9A20CB91C0A24790018AC85 /* CTImageData.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,6 +320,7 @@
 				44FB0C881C084000005F4781 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
